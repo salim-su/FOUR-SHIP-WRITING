@@ -95,7 +95,7 @@
 import { ShipVoyagePage } from 'api/ship-real-writing-api'
 
 export default {
-  name: 'area-people-car-detail-guard',
+  name: 'real-writing-ship-list',
   data() {
     return {
       list: [],

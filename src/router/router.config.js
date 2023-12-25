@@ -12,9 +12,9 @@ export const constantRouterMap = [
     component: () => import('views/apInfo/apInfo')
   },
   {
-    path: '/area-people-car-detail-guard',
-    name: '/area-people-car-detail-guard',
-    component: () => import('views/ship/area-people-car-detail-guard'),
+    path: '/real-writing-ship-list',
+    name: '/real-writing-ship-list',
+    component: () => import('views/ship/real-writing-ship-list'),
     meta: { title: '作业写实', keepAlive: false, requireAuth: false }
   },
   {

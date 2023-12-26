@@ -21,11 +21,30 @@
         show-word-limit
       />
 
-      <van-field name='uploader' label='图片:'>
-        <template #input>
-          <van-uploader :before-read='beforeRead' @click-upload='clickUpload' v-model='fileList' />
-        </template>
-      </van-field>
+      <!--      <van-field name='uploader' label='图片:'>-->
+      <!--        <template #input>-->
+      <!--                <van-uploader ref="uploader" :before-read='beforeRead' @click-upload='clickUpload' v-model='fileList' :after-read="afterRead">-->
+      <!--                  <van-button size="mini" type="primary" icon="photo" @click="handleClick">上传</van-button>-->
+      <!--                </van-uploader>-->
+
+
+      <!--        </template>-->
+      <!--      </van-field>-->
+
+            <van-uploader
+              ref='files'
+              :disabled='disabled'
+              :file-list='fileList'
+              :max-count='3'
+              :upload-text="'上传'"
+              :preview-full-image='false'
+              :use-before-read='true'
+              accept='image/*'
+              :after-read='afterRead'
+            >
+              <div></div>
+            </van-uploader>
+            <van-button size='mini' type='primary' icon='photo' @click='handleClick'>上传</van-button>
 
       <!--      <van-field-->
       <!--        readonly-->
@@ -40,6 +59,15 @@
       <!--        :rules='[{ required: true}]'-->
       <!--        required-->
       <!--      />-->
+
+      <!--      <input type='file' ref='files'>-->
+
+
+<!--      <van-button size='mini' type='primary' icon='photo' @click='handleClick'>上传</van-button>-->
+
+      <!--      <input type='file' ref='files'>-->
+
+
       <van-popup v-model='showHatchPicker' position='bottom'>
         <van-picker
           show-toolbar
@@ -69,7 +97,8 @@ export default {
       hatchColumns: [],
       fileList: [],
       hatch: '',
-      hatchSel: ''
+      hatchSel: '',
+      disabled: false
     }
   },
   mounted() {
@@ -89,6 +118,20 @@ export default {
     ]
   },
   methods: {
+    tes() {
+      alert(11)
+    },
+    handleClick() {
+      // alert("salmisu")
+      // 手动触发上传事件
+      this.showHatchPicker = true
+
+    },
+    afterRead(file) {
+      // 上传成功后添加到 fileList 数组
+      // file.response 包含上传成功后的文件信息
+      this.fileList.push(file)
+    },
     leftBack() {
       this.$router.replace({
         path: this.backUrl,
@@ -103,6 +146,8 @@ export default {
       this.hatch = value
       this.hatchSel = value['dictKey']
       this.showHatchPicker = false
+      // console.log(this.$refs.files.$refs.input)
+      this.$refs.files.$refs.input.click()
     },
     clickUpload() {
       // alert('sususu')
@@ -112,7 +157,7 @@ export default {
       // this.showHatchPicker = true
     },
     beforeRead(file) {
-      this.showHatchPicker = true
+      // this.showHatchPicker = true
       return true
     }
   }

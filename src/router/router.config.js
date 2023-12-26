@@ -18,6 +18,18 @@ export const constantRouterMap = [
     meta: { title: '作业写实', keepAlive: false, requireAuth: false }
   },
   {
+    path: '/real-writing-submit',
+    name: '/real-writing-submit',
+    component: () => import('views/ship/real-writing-submit'),
+    meta: { title: '作业写实提交', keepAlive: false, requireAuth: false }
+  },
+  {
+    path: '/real-writing-record-list',
+    name: '/real-writing-record-list',
+    component: () => import('views/ship/real-writing-record-list'),
+    meta: { title: '船名', keepAlive: false, requireAuth: false }
+  },
+  {
     path: '/',
     redirect: '/loading',
     meta: { title: '', keepAlive: false, requireAuth: false }

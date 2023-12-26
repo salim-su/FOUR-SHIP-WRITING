@@ -44,7 +44,7 @@
               <div class='flex align-items-center'>
                 <van-button plain type='info' class='mr5 tip-btn' size='small'
                             :color='item.impExp==="E"?"#D58836":"#2CBCAE"'>
-                  {{ item.impExpName + index }}
+                  {{ item.impExpName }}
                 </van-button>
                 <span class='fs16 pl5'>{{ item.shipNameZh }}</span>
               </div>
@@ -68,7 +68,7 @@
                   货类:
                 </template>
               </van-cell>
-              <van-cell :value='item.deadWeightTon'>
+              <van-cell :value='item.ton'>
                 <template #title>
                   总吨:
                 </template>
@@ -154,14 +154,11 @@ export default {
     },
     goToDetails(item) {
       this.$router.replace({
-        path: '/people-info-guard',
+        path: '/real-writing-record-list',
         query: {
-          id: item.id,
-          page: 'area-detail',
-          areaId: this.areaId,
-          cardType: this.cardType,
-          areaName: this.areaName,
-          backUrl: 'area-people-car-detail-guard'
+          shipId: item.shipId,
+          shipNameZh: item.shipNameZh,
+          backUrl: '/real-writing-ship-list'
         }
       })
     },

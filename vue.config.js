@@ -84,8 +84,8 @@ module.exports = {
         }
       },
       '/api/assign-work/': {
-        target: 'http://10.10.21.252/api/assign-work/',
-        // target: 'http://192.168.50.179:8092/',
+        // target: 'http://10.10.21.252/api/assign-work/',
+        target: 'http://192.168.50.179:8200/',
         // ws:true,
         changOrigin: true,
         pathRewrite: {

@@ -40,7 +40,7 @@ export default {
 }
 .writing-record-submit{
   .van-field__label{
-    width: 60px;
+    width: 40px;
   }
 }
 </style>

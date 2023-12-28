@@ -31,17 +31,34 @@
       <!--        </template>-->
       <!--      </van-field>-->
 
-      <van-uploader
-        ref='files'
-        :disabled='disabled'
-        :file-list='photoCar'
-        :max-count='3'
-        accept='image/*'
-        :after-read='uploadFilePerson'
-      >
-        <div></div>
-      </van-uploader>
-      <van-button size='mini' type='primary' icon='photo' @click='handleClick'>上传</van-button>
+
+      <van-field name='uploader' label='图片:'>
+        <template #input>
+          <van-uploader
+            ref='files'
+            :disabled='disabled'
+            :file-list='photoCar'
+            :max-count='3'
+            accept='image/*'
+            :after-read='uploadFilePerson'
+          >
+            <div></div>
+          </van-uploader>
+          <div class='pb5'>
+            <van-button class='btn-uploader' color='#f7f8fa' type='primary' @click='handleClick'>
+              <van-icon name='photograph' color='#dcdee0' size='0.7rem' />
+            </van-button>
+          </div>
+
+        </template>
+      </van-field>
+
+      <div class='btn-group flex justify-content-center mt20'>
+        <van-button type='default' style='width: 33%;' @click='leftBack'>返回</van-button>
+        <div class='placeholder'></div>
+        <van-button type='info' style='width: 33%;' @click='subInfo'>提交</van-button>
+      </div>
+
 
       <!--      <van-field-->
       <!--        readonly-->
@@ -75,14 +92,14 @@
         />
       </van-popup>
     </div>
-    <van-button type='primary' @click='subInfo'>提交按钮</van-button>
-    <van-button type='primary' @click='listInfo'>列表按钮</van-button>
+
+    <!--    <van-button type='primary' @click='listInfo'>列表按钮</van-button>-->
   </div>
 </template>
 
 <script>
 import { Dialog, Toast } from 'vant'
-import { ShipRealWriting, ShipRealWritingList } from 'api/ship-real-writing-api'
+import { Dictionary, ShipRealWriting, ShipRealWritingList } from 'api/ship-real-writing-api'
 
 export default {
   name: 'real-writing-submit',
@@ -103,24 +120,17 @@ export default {
       photoIDCar: []
     }
   },
-  mounted() {
+  async mounted() {
     this.shipNameZh = this.$route.query.shipNameZh
     this.backUrl = this.$route.query.backUrl
     this.shipId = this.$route.query.shipId
     this.cabin = this.$route.query.cabin
-    this.hatchColumns = [
-      {
-        dictValue: '前',
-        dictkey: 'qian'
-      },
-      {
-        dictValue: '后',
-        dictkey: 'hou'
-      }
-    ]
+    await Dictionary('hatch_type').then(res => {
+      this.hatchColumns = res['data']
+    })
   },
   methods: {
-    getFileFromBase64(base64URL, filename) {
+    async getFileFromBase64(base64URL, filename) {
       var arr = base64URL.split(',')
       var mime = arr[0].match(/:(.*?);/)[1]
       var bstr = atob(arr[1])
@@ -131,7 +141,7 @@ export default {
       }
       return new File([u8arr], filename, { type: mime })
     },
-    uploadFilePerson(file) {
+    async uploadFilePerson(file) {
       file.status = 'uploading'
       file.message = '上传中...'
       if (/\/(?:jpeg|png)/i.test(file.file.type)) {
@@ -139,16 +149,16 @@ export default {
         const context = canvas.getContext('2d')
         const img = new Image()
         img.src = file.content
-        img.onload = () => {
+        img.onload = async() => {
           const square = 0.3
           const imageWidth = Math.round(square * img.width)
           const imageHeight = Math.round(square * img.height)
           canvas.width = imageWidth
           canvas.height = imageHeight
           context.drawImage(img, 0, 0, imageWidth, imageHeight)
-          file.content = canvas.toDataURL(file.file.type, 0.6)
+          file.content = canvas.toDataURL(file.file.type, 0.8)
           const name = file.file.name
-          file.file = this.getFileFromBase64(file.content, name)
+          file.file = await this.getFileFromBase64(file.content, name)
         }
       }
       setTimeout(() => {
@@ -160,43 +170,34 @@ export default {
             file.status = 'done'
             file.message = '上传成功'
             this.photoIDCar.push(res.data.data.attachId)
+            this.photoCar.push({
+              url: res.data.data.link,
+              hatch: this.hatchSel,
+              ossId: res.data.data.attachId
+              // url: 'https://img01.yzcdn.cn/vant/leaf.jpg'
+            })
           } else {
             file.status = 'failed'
             file.message = '上传失败'
           }
-          this.photoCar.push({
-            url: res.data.data.link
-            // url: 'https://img01.yzcdn.cn/vant/leaf.jpg'
-          })
         })
-      }, 1000)
-    },
-    listInfo() {
-      const params = {
-        shipId: '123123123',
-        cabin: '1'
-      }
-      ShipRealWritingList(params).then(res => {
-        console.log(res)
-      })
-      // ShipRealWritingList
+      }, 200)
     },
     subInfo() {
-      console.log(this.photoCar)
-      console.log(this.photoIDCar)
-      // const data = {
-      //   shipId: '123123123',
-      //   cabin: '1',
-      //   log: '我是日志',
-      //   attachmentDetails: [
-      //     { ossId: '1', hatch: 'qian' },
-      //     { ossId: '2', hatch: 'hou' }
-      //   ]
-      // }
-      // console.log(data)
-      // ShipRealWriting(data).then(res => {
-      //   console.log(res)
-      // })
+      const data = {
+        shipId: this.shipId,
+        cabin: this.cabin,
+        log: this.log,
+        attachmentDetails: [
+          ...this.photoCar
+        ]
+      }
+      ShipRealWriting(data).then(res => {
+        Toast('保存成功')
+        setTimeout(res => {
+          this.leftBack()
+        }, 200)
+      })
     },
     tes() {
       alert(11)
@@ -223,11 +224,15 @@ export default {
       })
     },
     onHatchConfirm(value) {
+      // const oldHatchSel = this.hatchSel
       this.hatch = value
       this.hatchSel = value['dictKey']
       this.showHatchPicker = false
-      // console.log(this.$refs.files.$refs.input)
       this.$refs.files.$refs.input.click()
+
+      // if (oldHatchSel !== this.hatchSel) {
+      // }
+      // console.log(this.$refs.files.$refs.input)
     },
     clickUpload() {
       // alert('sususu')
@@ -253,5 +258,12 @@ export default {
   //margin-top: -120px;
 }
 
+.btn-uploader {
+  width: 80px;
+  height: 80px;
+}
 
+.placeholder {
+  width: 10%;
+}
 </style>

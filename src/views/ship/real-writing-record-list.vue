@@ -1,7 +1,7 @@
 <template>
   <div class='writing-record-content posr'>
     <div class='fl-btn flex align-items-center justify-content-center' @click='goWriteSubmit'>
-      <van-icon name="plus" size='0.6rem' color='#fff'/>
+      <van-icon name='plus' size='0.6rem' color='#fff' />
     </div>
     <div class='writing-record-top-bg'>
       <van-nav-bar
@@ -12,8 +12,8 @@
         @click-left='leftBack'
       />
       <div class='writing-record-tags'>
-        <van-tabs title-active-color='#3675E9' color='#3675E9' @change='tabChange($event+1)' v-model='active'>
-          <van-tab :key='index' v-for='index in 9' :title="index+'舱'">
+        <van-tabs title-active-color='#3675E9' color='#3675E9' @change='tabChange($event)' v-model='active'>
+          <van-tab :key='index' v-for='index in [1,2,3,4,5,6,7,8,9]' :title="index+'舱'">
           </van-tab>
         </van-tabs>
       </div>
@@ -21,83 +21,57 @@
 
     </div>
     <div class='writing-record-body'>
-      <van-steps direction='vertical' :active='10' active-color='#38f'>
 
-        <van-step>
-          <div class='writing-record-title flex justify-content-between'>
+      <div class='flex justify-content-center' v-if='loading'>
+        <van-loading type='spinner' />
+      </div>
 
-            <div class='left'>
-              <div class='left-time mb5'>2023-09-09 08:08</div>
-              <div class='left-name mb5'>某某某</div>
+      <div>
+        <van-empty description="暂无数据" v-if='realWritingList.length===0'/>
+      </div>
+
+      <van-steps direction='vertical' :active='100' active-color='#38f' v-if='realWritingList.length'>
+        <template v-for='(item,index) in realWritingList'>
+          <van-step :key='index'>
+            <div class='writing-record-title flex justify-content-between'>
+
+              <div class='left'>
+                <div class='left-time mb5'>{{ item.updateTime }}</div>
+                <div class='left-name mb5'>{{ item.updateUserName }}</div>
+              </div>
+              <div class='right pr10'>
+                <van-icon class='mr15' name='edit' size='0.5rem' />
+                <van-icon name='delete-o' size='0.5rem' />
+                <!--              <van-button type="primary" size="mini">编辑</van-button>-->
+                <!--              <van-button type="primary" size="mini">删除</van-button>-->
+              </div>
             </div>
-            <div class='right pr10'>
-              <van-icon class='mr15' name='edit' size='0.5rem' />
-              <van-icon name='delete-o' size='0.5rem' />
-              <!--              <van-button type="primary" size="mini">编辑</van-button>-->
-              <!--              <van-button type="primary" size="mini">删除</van-button>-->
+            <div class='writing-record-img w flex flex-wrap'>
+              <template
+                v-for='(items) in item.attachmentDetails'>
+                <van-image
+                  width='48%'
+                  height='120'
+                  :src='items.url'
+                  class='mb5 posr'
+                  @click='showImg(items.url)'
+                >
+                  <template v-slot:error></template>
+                  <template v-slot:default>
+                    <!--                  <div class='tips'>asd</div>-->
+                    <div class='tips'>{{ items.hatchName }}</div>
+                  </template>
+                </van-image>
+                <div class='ge' style='width: 2%;'></div>
+              </template>
             </div>
-          </div>
-          <div class='writing-record-img w flex flex-wrap'>
-            <template v-for='(item,index) in ["https://img01.yzcdn.cn/vant/cat.jpeg","https://img01.yzcdn.cn/vant/cat.jpeg"]'>
-              <van-image
-                width='48%'
-                height='120'
-                :src='item'
-                class='mb5 posr'
-                @click='showImg(item)'
-              >
-                <template v-slot:error></template>
-                <template v-slot:default>
-<!--                  <div class='tips'>asd</div>-->
-                  <div class="tips">图片名称</div>
-                </template>
-              </van-image>
-              <div class='ge' style='width: 2%;'></div>
-            </template>
-          </div>
-          <div class='writing-record-remark mt5'>
+            <div class='writing-record-remark mt5'>
             <span>
-              情况说明情况说明情况说明情况说明情况说明情况说明情况说明情况说明
+              {{ item.log }}
             </span>
-
-          </div>
-
-        </van-step>
-
-        <van-step>
-          <h3>【城市】物流状态2</h3>
-          <p>2016-07-11 10:00</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-        <van-step>
-          <h3>快件已发货</h3>
-          <p>2016-07-10 09:30</p>
-        </van-step>
-
-
+            </div>
+          </van-step>
+        </template>
       </van-steps>
 
     </div>
@@ -106,6 +80,7 @@
 
 <script>
 import { ImagePreview } from 'vant'
+import { ShipRealWritingList } from 'api/ship-real-writing-api'
 
 export default {
   name: 'real-writing-record-list',
@@ -114,7 +89,9 @@ export default {
       shipId: '',
       shipNameZh: '',
       backUrl: '',
+      loading: false,
       fileList: [],
+      realWritingList: [],
       cabin: 0, // 舱号
       active: 0 // 选中
     }
@@ -128,9 +105,7 @@ export default {
     if (this.$route.query.cabin) {
       this.active = this.$route.query.cabin - 1
     }
-    console.log(this.areaId)
-    console.log(this.cardType)
-    console.log(this.areaName)
+    this.loadData()
     // setTimeout(res => {
     //   this.fileList = [
     //     { url: 'https://img01.yzcdn.cn/vant/cat.jpeg' },
@@ -144,6 +119,17 @@ export default {
     // },5000)
   },
   methods: {
+    loadData() {
+      const parmas = {
+        cabin: this.active + 1,
+        shipId: this.shipId
+      }
+      // this.loading = true
+      ShipRealWritingList(parmas).then(res => {
+        this.realWritingList = res['data']
+        // this.loading = false
+      })
+    },
     showImg(item) {
       ImagePreview({
         images: [
@@ -152,7 +138,8 @@ export default {
       })
     },
     tabChange(e) {
-      console.log(e)
+      alert("ss")
+      this.loadData()
     },
     leftBack() {
       this.$router.replace({ path: this.backUrl })
@@ -212,7 +199,8 @@ export default {
 .van-step__circle-container {
 
 }
-.fl-btn{
+
+.fl-btn {
   position: absolute;
   bottom: 50px;
   right: 30px;

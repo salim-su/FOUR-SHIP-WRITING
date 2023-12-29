@@ -27,7 +27,7 @@
       </div>
 
       <div>
-        <van-empty description="暂无数据" v-if='realWritingList.length===0'/>
+        <van-empty description='暂无数据' v-if='realWritingList.length===0' />
       </div>
 
       <van-steps direction='vertical' :active='100' active-color='#38f' v-if='realWritingList.length'>
@@ -36,12 +36,13 @@
             <div class='writing-record-title flex justify-content-between'>
 
               <div class='left'>
-                <div class='left-time mb5'>{{ item.updateTime }}</div>
+                <div class='left-time mb5'>{{ item.createTime }}</div>
+                <!--                <div class='left-time mb5'>{{ item.updateTime }}</div>-->
                 <div class='left-name mb5'>{{ item.updateUserName }}</div>
               </div>
               <div class='right pr10'>
-                <van-icon class='mr15' name='edit' size='0.5rem' />
-                <van-icon name='delete-o' size='0.5rem' />
+                <van-icon class='mr15' name='edit' size='0.5rem' @click='editItem(item)' />
+                <van-icon name='delete-o' size='0.5rem' @click='deleteItem(item)' />
                 <!--              <van-button type="primary" size="mini">编辑</van-button>-->
                 <!--              <van-button type="primary" size="mini">删除</van-button>-->
               </div>
@@ -79,8 +80,8 @@
 </template>
 
 <script>
-import { ImagePreview } from 'vant'
-import { ShipRealWritingList } from 'api/ship-real-writing-api'
+import { Dialog, ImagePreview, Toast } from 'vant'
+import { RemovePcShipRealWriting, ShipRealWritingList } from 'api/ship-real-writing-api'
 
 export default {
   name: 'real-writing-record-list',
@@ -106,28 +107,31 @@ export default {
       this.active = this.$route.query.cabin - 1
     }
     this.loadData()
-    // setTimeout(res => {
-    //   this.fileList = [
-    //     { url: 'https://img01.yzcdn.cn/vant/cat.jpeg' },
-    //     { url: 'https://img01.yzcdn.cn/vant/cat.jpeg' },
-    //     { url: 'https://img01.yzcdn.cn/vant/cat.jpeg' }
-    //   ]
-    // }, 100)
-    // this.onLoad()
-    // setTimeout(res=>{
-    //   this.active = 6
-    // },5000)
   },
   methods: {
+    deleteItem(item) {
+      console.log(JSON.stringify(item))
+      Dialog.confirm({
+        title: '是否确认删除'
+      })
+        .then(() => {
+          RemovePcShipRealWriting(item.id).then(res => {
+            Toast('删除成功')
+            this.loadData()
+          })
+        })
+        .catch(() => {
+        })
+    },
     loadData() {
       const parmas = {
         cabin: this.active + 1,
         shipId: this.shipId
       }
-      // this.loading = true
+      this.loading = true
       ShipRealWritingList(parmas).then(res => {
         this.realWritingList = res['data']
-        // this.loading = false
+        this.loading = false
       })
     },
     showImg(item) {
@@ -138,16 +142,13 @@ export default {
       })
     },
     tabChange(e) {
-      alert("ss")
       this.loadData()
     },
     leftBack() {
-      this.$router.replace({ path: this.backUrl })
+      this.$router.replace({ path: 'real-writing-ship-list' })
     },
     goWriteSubmit() {
       this.cabin = this.active + 1
-      console.log(this.cabin)
-      console.log(this.shipId)
       this.$router.replace({
         path: '/real-writing-submit',
         query: {
@@ -155,6 +156,19 @@ export default {
           shipNameZh: this.shipNameZh,
           cabin: this.cabin,
           backUrl: '/real-writing-record-list'
+        }
+      })
+    },
+    editItem(item) {
+      this.$router.replace({
+        path: '/real-writing-submit',
+        query: {
+          shipId: item.shipId,
+          shipNameZh: this.shipNameZh,
+          cabin: item.cabin,
+          log: item.log,
+          photo: item.attachmentDetails,
+          id: item.id
         }
       })
     }

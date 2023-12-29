@@ -3,10 +3,23 @@ import request from '@/utils/request'
 const assignWork = 'api/assign-work/'
 const api = {
   ShipVoyagePage: assignWork + 'voyageInfo/shipVoyagePage',
+  RemovePcShipRealWriting: assignWork + 'shipRealWriting/removePcShipRealWriting',
   ShipRealWritingList: assignWork + 'shipRealWriting/list',
   ShipRealWriting: assignWork + 'shipRealWriting/submit',
   Dictionary: 'api/blade-system/dict-biz/dictionary'
 }
+
+export function RemovePcShipRealWriting(id) {
+  return request({
+    url: api.RemovePcShipRealWriting,
+    method: 'post',
+    params: {
+      id: id
+    },
+    hideloading: true
+  })
+}
+
 export function Dictionary(code) {
   return request({
     url: api.Dictionary,

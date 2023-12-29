@@ -43,4 +43,9 @@ export default {
     width: 40px;
   }
 }
+.writing-record-submit{
+  .van-field__control{
+    flex-wrap: wrap !important;
+  }
+}
 </style>

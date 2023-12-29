@@ -3,9 +3,9 @@
     <div class='ship-writing-top-bg'>
       <van-nav-bar
         class='pt30'
-        :title='areaName'
+        title='船舶作业写实'
         :fixed='false'
-        :left-arrow='true'
+        :left-arrow='false'
         @click-left='leftBack'
       />
       <div class='ship-writing-search'>
@@ -17,7 +17,7 @@
         </van-tabs>
         <div class='bar-search'>
           <!--          <van-search @search="onSearch" v-model="value" placeholder="请输入搜索关键词" right-icon='search' left-icon='null'/>-->
-          <van-search @search='onSearch' v-model='value' placeholder='中英文船名,呼号,IMO' left-icon=''>
+          <van-search @clear='onClear' @search='onSearch' v-model='value' placeholder='中英文船名,呼号,IMO' left-icon=''>
             <template #right-icon>
               <div @click='onSearch'>
                 <van-icon name='search' size='0.5rem' />
@@ -120,15 +120,6 @@ export default {
     }
   },
   mounted() {
-    // this.areaId = this.$route.query.areaId
-    this.areaId = '1476009782047469570'
-    // this.cardType = this.$route.query.cardType
-    this.cardType = 'BIZ_PERSONNEL'
-    // this.areaName = this.$route.query.areaName
-    this.areaName = '船舶作业写实'
-    console.log(this.areaId)
-    console.log(this.cardType)
-    console.log(this.areaName)
     this.onLoad()
   },
   methods: {
@@ -142,6 +133,10 @@ export default {
       } else if (e === 1) {
         this.qureyFrom.forecastStatus = 'L'
       }
+      this.onRefresh()
+    },
+    onClear() {
+      this.qureyFrom.keyword = this.value
       this.onRefresh()
     },
     onSearch() {

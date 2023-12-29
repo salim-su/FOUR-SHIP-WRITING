@@ -3,13 +3,38 @@
     <div class='writing-record-top-bg'>
       <van-nav-bar
         class='pt30'
-        :title='shipNameZh+cabin+"舱"'
+        :title='shipNameZh+"-"+cabin+"舱"'
         :fixed='false'
         :left-arrow='true'
         @click-left='leftBack'
       />
     </div>
     <div class='writing-record-submit-body'>
+      <van-field name='uploader' label='图片:' required>
+        <template #input>
+          <van-uploader
+            ref='files'
+            :disabled='disabled'
+            :file-list='photo'
+            :max-count='3'
+            accept='image/*'
+            :after-read='uploadFilePerson'
+            :before-delete='deleteFilePerson'
+          >
+            <div></div>
+            <template #preview-cover='{ file }'>
+              <div class='preview-cover van-ellipsis'>{{ file.name }}</div>
+            </template>
+          </van-uploader>
+          <div class='pb5'>
+            <van-button class='btn-uploader' color='#f7f8fa' type='primary' @click='handleClick'>
+              <van-icon name='photograph' color='#dcdee0' size='0.7rem' />
+            </van-button>
+          </div>
+
+        </template>
+      </van-field>
+
       <van-field
         v-model='log'
         rows='3'
@@ -31,27 +56,6 @@
       <!--        </template>-->
       <!--      </van-field>-->
 
-
-      <van-field name='uploader' label='图片:'>
-        <template #input>
-          <van-uploader
-            ref='files'
-            :disabled='disabled'
-            :file-list='photoCar'
-            :max-count='3'
-            accept='image/*'
-            :after-read='uploadFilePerson'
-          >
-            <div></div>
-          </van-uploader>
-          <div class='pb5'>
-            <van-button class='btn-uploader' color='#f7f8fa' type='primary' @click='handleClick'>
-              <van-icon name='photograph' color='#dcdee0' size='0.7rem' />
-            </van-button>
-          </div>
-
-        </template>
-      </van-field>
 
       <div class='btn-group flex justify-content-center mt20'>
         <van-button type='default' style='width: 33%;' @click='leftBack'>返回</van-button>
@@ -115,16 +119,32 @@ export default {
       fileList: [],
       hatch: '',
       hatchSel: '',
+      hatchName: '',
       disabled: false,
-      photoCar: [],
-      photoIDCar: []
+      photo: [],
+      photoID: [],
+      id: ''
     }
   },
   async mounted() {
     this.shipNameZh = this.$route.query.shipNameZh
-    this.backUrl = this.$route.query.backUrl
     this.shipId = this.$route.query.shipId
     this.cabin = this.$route.query.cabin
+    if (this.$route.query.id) {
+      this.id = this.$route.query.id
+    }
+    if (this.$route.query.log) {
+      this.log = this.$route.query.log
+    }
+    if (this.$route.query.photo) {
+      this.photo = this.$route.query.photo
+      console.log(this.photo)
+      this.photo.forEach(e => {
+        e['file'] = {
+          name: e['hatchName']
+        }
+      })
+    }
     await Dictionary('hatch_type').then(res => {
       this.hatchColumns = res['data']
     })
@@ -169,11 +189,14 @@ export default {
           if (res.status === 200) {
             file.status = 'done'
             file.message = '上传成功'
-            this.photoIDCar.push(res.data.data.attachId)
-            this.photoCar.push({
+            this.photoID.push(res.data.data.attachId)
+            this.photo.push({
               url: res.data.data.link,
               hatch: this.hatchSel,
-              ossId: res.data.data.attachId
+              ossId: res.data.data.attachId,
+              file: {
+                name: this.hatchName
+              }
               // url: 'https://img01.yzcdn.cn/vant/leaf.jpg'
             })
           } else {
@@ -184,14 +207,21 @@ export default {
       }, 200)
     },
     subInfo() {
+      if (this.photo.length === 0) {
+        Toast('请上传图片')
+        return
+      }
+
       const data = {
+        id: this.id,
         shipId: this.shipId,
         cabin: this.cabin,
         log: this.log,
         attachmentDetails: [
-          ...this.photoCar
+          ...this.photo
         ]
       }
+      console.log(this.fileList)
       ShipRealWriting(data).then(res => {
         Toast('保存成功')
         setTimeout(res => {
@@ -199,23 +229,20 @@ export default {
         }, 200)
       })
     },
-    tes() {
-      alert(11)
+    deleteFilePerson(file, index) {
+      this.photoID.splice(index.index, 1)
+      this.photo.splice(index.index, 1)
     },
     handleClick() {
-      // alert("salmisu")
-      // 手动触发上传事件
       this.showHatchPicker = true
-
     },
     afterRead(file) {
       // 上传成功后添加到 fileList 数组
-      // file.response 包含上传成功后的文件信息
       this.fileList.push(file)
     },
     leftBack() {
       this.$router.replace({
-        path: this.backUrl,
+        path: '/real-writing-record-list',
         query: {
           shipId: this.shipId,
           shipNameZh: this.shipNameZh,
@@ -227,6 +254,7 @@ export default {
       // const oldHatchSel = this.hatchSel
       this.hatch = value
       this.hatchSel = value['dictKey']
+      this.hatchName = value['dictValue']
       this.showHatchPicker = false
       this.$refs.files.$refs.input.click()
 
@@ -265,5 +293,17 @@ export default {
 
 .placeholder {
   width: 10%;
+}
+
+.preview-cover {
+  position: absolute;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
 }
 </style>
